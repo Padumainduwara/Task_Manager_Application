@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_bcrypt import Bcrypt
 import mysql.connector
+from datetime import datetime  # Import datetime module
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for cross-origin requests
@@ -57,7 +58,6 @@ def register():
     except mysql.connector.Error as err:
         # Check for duplicate entry error (Error Code 1062)
         if err.errno == 1062:
-            # Return custom error message for duplicate username
             return jsonify({"success": False, "message": "Username already exists. Please try with another one."}), 400
         else:
             return jsonify({"success": False, "message": f"Error: {err}"}), 500
@@ -121,7 +121,10 @@ def add_task():
     task_name = data.get('taskName')
     description = data.get('description')
     status = data.get('status')
-    task_created_on = data.get('taskCreatedOn')
+    
+    # Handle task creation date if not provided
+    task_created_on = data.get('taskCreatedOn') or datetime.now().strftime('%Y-%m-%d')
+    
     start_date = data.get('startDate') if data.get('startDate') else None
     start_time = data.get('startTime') if data.get('startTime') else None
     end_date = data.get('endDate') if data.get('endDate') else None
@@ -144,7 +147,6 @@ def add_task():
         return jsonify({"success": True, "message": "Task added successfully!"}), 201
     except mysql.connector.Error as err:
         return jsonify({"success": False, "message": f"Error: {err}"}), 500
-
 
 # DELETE task endpoint
 @app.route('/api/tasks/<int:task_id>', methods=['DELETE'])

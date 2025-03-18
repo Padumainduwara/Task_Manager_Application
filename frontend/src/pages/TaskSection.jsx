@@ -6,6 +6,8 @@ const TaskSection = ({ tasks, fetchTasks }) => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editMode, setEditMode] = useState(false); // To determine if it's edit mode or add mode
   const [currentTask, setCurrentTask] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // Delete confirmation modal
+  const [taskToDelete, setTaskToDelete] = useState(null); // Track the task to delete
 
   // Initialize form state
   const [taskForm, setTaskForm] = useState({
@@ -37,7 +39,7 @@ const TaskSection = ({ tasks, fetchTasks }) => {
   // Save the updated task
   const saveTask = () => {
     const endpoint = editMode
-      ? `http://localhost:5000/api/tasks/${currentTask.id}` // Update endpoint (with backticks)
+      ? `http://localhost:5000/api/tasks/${currentTask.id}` // Update endpoint
       : 'http://localhost:5000/api/add-task'; // Add new task endpoint
 
     const method = editMode ? 'PUT' : 'POST'; // Use PUT for update
@@ -62,6 +64,37 @@ const TaskSection = ({ tasks, fetchTasks }) => {
       .catch((error) => {
         console.error('Error saving task:', error);
         toast.error('Something went wrong, please try again.');
+      });
+  };
+
+  // Handle deleting a task
+  const handleDeleteTask = (taskId) => {
+    setTaskToDelete(taskId);
+    setShowDeleteConfirm(true); // Show the delete confirmation modal
+  };
+
+  // Confirm deletion of the task
+  const confirmDeleteTask = () => {
+    fetch(`http://localhost:5000/api/tasks/${taskToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          fetchTasks(); // Refresh tasks list after deletion
+          toast.success('Task deleted successfully!');
+        } else {
+          toast.error('Failed to delete task.');
+        }
+        setShowDeleteConfirm(false); // Close the confirmation modal
+      })
+      .catch((error) => {
+        console.error('Error deleting task:', error);
+        toast.error('Something went wrong, please try again.');
+        setShowDeleteConfirm(false); // Close the confirmation modal
       });
   };
 
@@ -195,6 +228,30 @@ const TaskSection = ({ tasks, fetchTasks }) => {
               <button
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                 onClick={() => setShowTaskModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold text-gray-200 mb-4">Confirm Deletion</h2>
+            <p className="text-gray-400 mb-6">Are you sure you want to delete this task?</p>
+            <div className="flex justify-between">
+              <button
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                onClick={confirmDeleteTask}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+                onClick={() => setShowDeleteConfirm(false)}
               >
                 Cancel
               </button>

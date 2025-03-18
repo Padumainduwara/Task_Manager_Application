@@ -34,9 +34,9 @@ const Sidebar = () => {
             </Link>
           </li>
           <li>
-          <Link to="/pending" className="flex items-center px-4 py-2 hover:bg-gray-700 rounded-md">
+            <Link to="/pending" className="flex items-center px-4 py-2 hover:bg-gray-700 rounded-md">
               <span className="mr-3">🕒</span> Pending!
-          </Link>
+            </Link>
           </li>
           <li>
             <Link to="/completed" className="flex items-center px-4 py-2 hover:bg-gray-700 rounded-md">
